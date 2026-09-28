@@ -1,0 +1,34 @@
+name: Hello Actions
+
+# Triggers: when does this workflow run?
+on:
+  push:            # any branch push (so it runs on your feature branch)
+  workflow_dispatch:   # manual "Run workflow" button (only appears once this file is on main)
+    inputs:
+      name:
+        description: "Who should we greet?"
+        required: false
+        default: "team"
+
+jobs:
+  say-hello:
+    runs-on: ubuntu-latest   # GitHub-hosted, free Ubuntu runner
+    steps:
+      - name: Greet
+        run: |
+          echo "Hello, ${{ github.event.inputs.name || 'team' }}!"
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Event:        ${{ github.event_name }}"
+          echo "Branch:       ${{ github.ref_name }}"
+          echo "Repository:   ${{ github.repository }}"
+
+      - name: Check out the repo
+        uses: actions/checkout@v4   # 'uses' = reusable action, 'run' = raw shell
+
+      - name: List the files we just checked out
+        run: ls -la
+
+      - name: Show runner details
+        run: |
+          echo "Runner OS: ${{ runner.os }}"
+          uname -a
