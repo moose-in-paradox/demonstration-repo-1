@@ -1,0 +1,40 @@
+name: PR Conventions
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, synchronize, reopened]   # 'edited' re-runs when the title changes
+
+permissions:
+  contents: read
+
+jobs:
+  check-conventions:
+    name: Check branch name and PR title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch name
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          pattern='^(feature|fix|hotfix|chore|docs|refactor)/[a-z0-9]+(-[a-z0-9]+)*$'
+          if [[ "$BRANCH" =~ $pattern ]]; then
+            echo "Branch name OK: $BRANCH"
+          else
+            echo "::error::Branch '$BRANCH' does not follow <type>/<kebab-case-description>."
+            echo "Allowed types: feature, fix, hotfix, chore, docs, refactor"
+            exit 1
+          fi
+
+      - name: Check PR title (Conventional Commits)
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          pattern='^(feat|fix|docs|style|refactor|test|chore)(\([a-z0-9-]+\))?!?: .+'
+          if [[ "$TITLE" =~ $pattern ]]; then
+            echo "PR title OK: $TITLE"
+          else
+            echo "::error::PR title '$TITLE' does not follow Conventional Commits."
+            echo "Expected: <type>(optional-scope): <summary>  e.g. feat(cards): add Bob's card"
+            exit 1
+          fi
